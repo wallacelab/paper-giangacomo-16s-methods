@@ -95,10 +95,5 @@ grouping="Genus"
 conda activate $conda_phyloseq
 bash ./2_AnalyzePrimerSets.sh $datadir $analdir $qiimedir $silva_taxonomy $silva_tree $keyfile $sample_depth $otu_depth $otu_prevalence $rarefaction "$bad_samples" $grouping
 
-# TODO: Things to test
-#    - Amount of input sample
-#    - Input species
-#    - Amount of input buffer
-#    - Compare extraction kits
-#    - Compare primer sets
+
 

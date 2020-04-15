@@ -102,22 +102,3 @@ bash ./2_AnalyzeExtractionMethods.sh $datadir $analdir $qiimedir $silva_taxonomy
 # Note: Two Soils ASVs had no BLAST hits against the SILVA database and so didn't make it into the final file. They are very rare, though.
 # Note: ~1600 ASVs don't have perfect matches at genus level among their BLAST hits. Sometimes this is due to different but equivalent names for the genus, sometimes because there are legitimate
 #       best matches among what appear to be multiple genera (but often in same family)
-
-# TODO: There's an odd pattern in the overall plot where the corn samples that were extracted with PowerSoil cluster apart from all the other corn samples and kind of close to the soil samples
-#       It's only the corn samples, though, and only in the weighted UniFrac, which is odd. It seems strange for the most abundant things to be contamination but not rare things 
-# TODO: Recheck the above with organnele-removed ata
-# TODO: Figure out what it means that MoBio has higher alpha diversity in soil but lower in corn samples
-
-# TODO: update below since Deblur doesn't give as fine a hit to organelles
-# Note on organelle taxonomy (step 2i): SILVA doesn't match the actual species used (maize, arabidopsis, soybean), but gets close. I BLASTED to be sure:
-#  Mitochondria:
-#   Camelina sativa (JFZQ01000252.768006.769916) is a 100% match to Arabidopsis thaliana Col-0
-#   Zea luxurians (DQ645537.376219.378169) is >98% similar to Zea mays mitochondrion
-#   Cajanus cajan (pigeon pea) (AGCT01052662.3515.5439) is also 100% match to Glycine max (soybean)
-#   Ambiguous taxa (AOTI010371954.25139.26771) is a 100% match to tons of stuff (rice, maize allium, others)
-#  Chloroplasts:
-#   Nicotiana tabacum (AYMY01007009.20276.21491) is also a 100% match to Arabidopsis thaliana
-#   Oryza longistaminata (LQBC01000613.79054.80322) hits a bunch of species I don't recognize at 99%+, but given it's a rice relative it's presumably also close to maize
-#   uncultured bacterium (AB696365.1.1335, KF037266.1.1460, HM219660.1.1395) all have >98% similarity to Glycine species
-#
-
