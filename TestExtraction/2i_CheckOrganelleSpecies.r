@@ -14,8 +14,8 @@ parser$add_argument("-i", "--infile", help="RDS file with saved phyloseq object 
 parser$add_argument("-n", "--top-otus", type='integer', default=10, help="Merge all but the top N OTUs for output display")
 parser$add_argument("-o", "--outfile", help="Graphical output file")
 args=parser$parse_args()
-# setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2019 10 Mohsen Final Data/2_Analysis_clean/')
-# args=parser$parse_args(c("-i","2b_filtered_data.phyloseq.RDS", "-o",'99_tmp.png'))
+# setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/TestExtraction/2_Analysis/')
+# args=parser$parse_args(c("-i","2j_combined_vsearch.phyloseq.RDS", "-o",'99_tmp.png'))
 
 # Load data
 mydata=readRDS(args$infile)
@@ -32,7 +32,7 @@ plot_organelles = function(mytable, taxa_names, top_n=10, title=""){
     targets = prune_taxa(taxa_names, mytable)
     
     # If have too many to display, merge all but the top N
-    if(length(targets) > top_n){
+    if(nrow(otu_table(targets)) > top_n){
         counts = sort(rowSums(otu_table(targets)))
         to_merge = names(counts)[1:(length(counts)-top_n)]
         merged = merge_taxa(targets, to_merge)

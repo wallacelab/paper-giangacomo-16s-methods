@@ -15,7 +15,8 @@ ref_seqs=$9    # Reference sequences used to train the classifier
 ref_taxonomy=${10} # Reference taxonomy used to train the classifier
 primers=${11}   # Fasta file of primers to check for correct amplicons
 blast_db=${12}  # BLAST database of OTUs to use for phylogenetic trees
-num_cores=${13}  # number of CPU cores to use in cutadapt
+percent_ident=${13} # Percent identity for vsearch clustering
+num_cores=${14}  # number of CPU cores to use in cutadapt
 
 # Set up subdirectories
 trimdir=$workdir/1_trimmed_seqs
@@ -221,3 +222,32 @@ if [ ! -e $primerdir ]; then mkdir $primerdir; fi
 ###################
 
 # blastn -query $workdir/rep-seqs.fasta -db $blast_db -out $workdir/1g_rep-seqs.blast_results.txt -evalue 1 -outfmt 6 -num_alignments 100 -num_threads $num_cores
+
+
+###################
+# Step 5 - Cluster with vsearch specifically to test identity of plant samples
+###################
+
+# echo "Running vsearch closed-reference clustering to check sample identity"
+
+# # Dereplicate sequences
+# qiime vsearch dereplicate-sequences \
+#   --i-sequences $workdir/1c_quality-filtered.qza \
+#   --o-dereplicated-table $workdir/1h_derep-table.qza \
+#   --o-dereplicated-sequences $workdir/1h_derep-seqs.qza
+  
+# # Closed-reference clustering
+# qiime vsearch cluster-features-closed-reference \
+#   --i-table $workdir/1h_derep-table.qza \
+#   --i-sequences $workdir/1h_derep-seqs.qza \
+#   --i-reference-sequences $ref_seqs \
+#   --p-perc-identity $percent_ident \
+#   --p-threads $num_cores \
+#   --o-clustered-table $workdir/1i_clustered-table.qza \
+#   --o-clustered-sequences $workdir/1i_rep-seqs.qza \
+#   --o-unmatched-sequences $workdir/1i_unmatched.qza
+
+# # Export biom table
+# qiime tools export --input-path $workdir/1i_clustered-table.qza --output-path $workdir
+# mv $workdir/feature-table.biom $workdir/vsearch-seqs.biom
+# biom convert -i $workdir/vsearch-seqs.biom -o $workdir/vsearch-seqs.biom.txt --to-tsv

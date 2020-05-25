@@ -49,5 +49,14 @@ phylo_filtered=$workdir/2b_filtered_data.phyloseq.RDS
 
 # Sanity check to make sure each sample comes from what we think it does (esp. since have outliers); use mitochondria and chloroplast seqs to identify origins
 #    Overall looks good. M99 (maize) looks a bit like an outlier with lots of Camelina salvia mitochondria (like Arabidopsis), but the levels are still 20x lower than actual Arabidopsis samples, so probably okay.
-Rscript 2i_CheckOrganelleSpecies.r -i $phylo_filtered -o $workdir/2i_organelle_check.png
-  
+# Rscript 2i_CheckOrganelleSpecies.r -i $phylo_filtered -o $workdir/2i_organelle_check.png
+
+# Repeat last step with vsearch-clustered OTUs, which in preliminary analyses gave clearer identification of each sample
+# Rscript 2a_ConvertQiimeToPhyloseqObject.r --biom $qiimedir/*/vsearch-seqs.biom.txt --tree $silva_tree \
+#      --taxonomy $taxonomy --key $keyfile -o $workdir/2j_combined_vsearch.phyloseq --samples-to-remove $bad_samples 
+# Rscript 2i_CheckOrganelleSpecies.r -i $workdir/2j_combined_vsearch.phyloseq.RDS -o $workdir/2j_organelle_check.vsearch.png
+# Ultimately the above species checks are ambiguous, depending on whether you look at identity, sequence count, etc. The BLAST and Kraken results in the troubleshooting directory seem more reliable
+
+# Look for taxa being discriminated against
+Rscript 2k_FindDiscriminatedTaxa.r -i $workdir/2f_otu_table.no_organelles.RDS -o $workdir/2k_discrimination --reference MoBioPowerSoil --levels Phylum Class Order Family Genus Species
+# TODO: Adding DESeq seems to have broken my conda environment. *sigh* Fix that next time
