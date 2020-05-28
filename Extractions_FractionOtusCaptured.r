@@ -13,23 +13,17 @@ parser$add_argument("-i", "--infile", help="RDS file with saved phyloseq object 
 parser$add_argument("-o", "--outprefix", help="Output file prefix for graphics")
 parser$add_argument("--group-by", help="Taxonomic rank to group results by (optional)")
 args=parser$parse_args()
-# setwd('/home/jgwall/Documents/Papers/16sMethodsDevelopment_Cecelia_Mohsen/Pipeline/')
+# setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/')
 # args=parser$parse_args(c("-i","TestExtraction/2_Analysis/2f_otu_table.no_organelles.RDS", "-o",'99_tmp'))
 
 
  # Load data
 cat("Loading data for fraction of OTUs captured\n")
-mydata = readRDS(args$infile)
+source("StandardizeLabels.r")
+mydata = standardize_labels(readRDS(args$infile), type='extraction')
 
 # Create a new combined metadata column of sample type + treatment
 metadata = sample_data(mydata)
-metadata$sample.type = sapply(as.character(metadata$sample.type), switch,
-                              "Leaf-Arabidopsis"="Arabidopsis", 
-                              "Leaf-Corn"="Maize", 
-                              "Leaf-Soybean"="Soybean", 
-                              "Soil-Soil SS1"="Soil",
-                                NA) # NA catches anything that didn't match
-metadata$sample.type = factor(metadata$sample.type, levels=c("Arabidopsis", "Maize", "Soybean", "Soil"))
 metadata$sample_type_and_treatment = paste(metadata$sample.type, metadata$treatment, sep="~")
 sample_data(mydata) = metadata
 

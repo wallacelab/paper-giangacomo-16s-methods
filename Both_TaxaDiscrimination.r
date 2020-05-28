@@ -17,14 +17,16 @@ parser$add_argument("-a", "--alpha", type="double", default=0.05, help="Signific
 parser$add_argument("-r", "--reference", default="MoBioPowerSoil", help="Reference treatment to contrast against")
 parser$add_argument("-l", "--levels", nargs="*", default="Phylum", help="Space-separated list of taxonomic levels to collapse and test at")
 parser$add_argument("-z", "--fix-zeros", default=FALSE, action='store_true', help="Adds 1 to all OTU counts to prevent DEseq from ignoring any with 0s")
+parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), default="extraction", help="Which experiment set this analysis belongs to")
 args=parser$parse_args()
-# setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/TestExtraction/2_Analysis/')
-# args=parser$parse_args(c("-i","2f_otu_table.no_organelles.RDS", "-o",'99_tmp', '-l', 'Phylum', 'Genus', '--fix-zeros'))
+# setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline')
+# args=parser$parse_args(c("-i","TestExtraction/2_Analysis/2f_otu_table.no_organelles.RDS", "-o",'Figures/99_tmp', '-l', 'Phylum', 'Genus', '--fix-zeros'))
 
 
 # Load data
 cat("Loading data from",args$infile,"\n")
-mydata=readRDS(args$infile)
+source("StandardizeLabels.r")
+mydata = standardize_labels(readRDS(args$infile), type=args$type)
 
 # Collapse at different levels
 cat("\tCollapsing at taxonomic ranks",args$levels,"\n")
@@ -120,28 +122,28 @@ get_plot_data = function(equalize=FALSE, contrast=NULL){
         sig_taxa = sig_taxa[significant$contrast == contrast]
     }
     rect_data$taxon = sub(rect_data$taxon, pattern=" NA.+", repl="") 
-    rect_data$significant = rect_data$taxon %in% sig_taxa
+    rect_data$significant = factor(rect_data$taxon %in% sig_taxa, levels=c("TRUE", "FALSE"))
     rect_data$contrast = contrast
     
     return(rect_data)
 }
 
 # Helper function to plot the hierarchical rectangles
-plot_rects = function(rects, title=""){
+plot_rects = function(rects){
     ggplot(rects, mapping=aes(xmin=left, xmax=right, ymin=bottom, ymax=top, fill=significant)) + 
         geom_rect(size=0.01, color='black') +
         scale_x_continuous(breaks=1:ncol(taxa) + 0.5, labels=names(taxa)) +
         theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5, size=6), axis.text.y = element_blank()) +
         facet_grid(~contrast) + 
-        ggtitle(title)
+        scale_fill_brewer(name="Significant", labels=c("Yes", "No"), palette='Set1') +
+        theme(legend.text = element_text(size=6), legend.title=element_text(size=8), legend.key.size = unit(0.4, "cm")) +
+        ggtitle(paste("Discrimination relative to", args$reference))
 }
 
 # Plot
 rawdata = lapply(treatments, function(t){get_plot_data(equalize=FALSE, contrast=t)})
-equaldata = lapply(treatments, function(t){get_plot_data(equalize=TRUE, contrast=t)})
-rawplot = plot_rects(do.call(rbind, rawdata), title="Raw counts")
-equalplot = plot_rects(do.call(rbind, equaldata), title="Equalized counts")
+rawplot = plot_rects(do.call(rbind, rawdata))
 
 # Save 
-ggsave(rawplot, file=paste(args$outprefix, ".raw_counts.png", sep=""), width=5, height=3, dpi=300)
-ggsave(equalplot, file=paste(args$outprefix, ".equal_counts.png", sep=""), width=5, height=3, dpi=300)
+ggsave(rawplot , file=paste(args$outprefix, ".png", sep=""), width=5, height=3, dpi=300)
+ggsave(rawplot , file=paste(args$outprefix, ".svg", sep=""), width=5, height=3, dpi=300)

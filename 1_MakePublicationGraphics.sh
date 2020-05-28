@@ -36,19 +36,26 @@ conda activate $conda_phyloseq
 # Note: After making these files, small formatting and layout tweaks were done to the SVG files to prepare them for final publication
 ##############
 
+# TODO: with standard renaming, see if can combine scripts and only use one for both extractions and amplifications instead of current duplication
+
+# # # Extractions # # # 
+
+extractions=$extractdir/2_Analysis/2f_otu_table.no_organelles.RDS
+
 # # Figure - PCoA of extraction methods
-# dataset=$extractdir/2_Analysis/2f_otu_table.no_organelles.RDS
 # rarefaction=1000
-# Rscript Extractions_PCoA.r -i $dataset --rarefaction $rarefaction -o $figdir/ExtractionPCoA
+# Rscript Extractions_PCoA.r -i $extractions --rarefaction $rarefaction -o $figdir/ExtractionPCoA
 
 # # Figure - Extraction alpha diversity
-# dataset=$extractdir/2_Analysis/2f_otu_table.no_organelles.RDS
-# Rscript Extractions_AlphaDiversity.r -i $dataset -o $figdir/ExtractionAlphaDiversity
+# Rscript Extractions_AlphaDiversity.r -i $extractions -o $figdir/ExtractionAlphaDiversity
 
 # # Figure - Fraction total/unique OTUs captured by each extraction method
-# dataset=$extractdir/2_Analysis/2f_otu_table.no_organelles.RDS
-# Rscript Extractions_FractionOtusCaptured.r -i $dataset -o $figdir/ExtractionUniqueSharedOtus --group-by Genus
+# Rscript Extractions_FractionOtusCaptured.r -i $extractions -o $figdir/ExtractionUniqueSharedOtus --group-by Genus
 
+# Figure - Taxa discriminated against by each method
+levels="Phylum Class Order Family Genus"
+alpha=0.01
+Rscript Both_TaxaDiscrimination.r -i $extractions -o $figdir/ExtractionTaxaDiscrimination --reference PowerSoil --levels $levels --fix-zeros --alpha $alpha --type extraction
 
 # # Supplemental Figure - Confirming species identity of extraction samples (specifically, that maize-powersoil is actually maize and not Arabidopsis)
 # blast_results=$troubleshootdir/CheckSpeciesByBlast/1_*.blast.txt
@@ -60,15 +67,26 @@ conda activate $conda_phyloseq
 # Rscript Extractions_SpeciesCheckKrakenBlast.r --blast-results $blast_results --kraken-results $kraken_results --min-cutoff $min_cutoff --taxonomy $taxonomy \
 #     --keyfile $keyfile --rds-file $rds_file -o $figdir/ExtractionSpeciesCheck
 
-# # Figure - Fraction organelle DNA by primer set
-# dataset=$primerdir/2_Analysis/2b_filtered_data.phyloseq.RDS
-# Rscript Primers_OrganelleContamination.r -i $dataset -o $figdir/PrimerOrganelleContamination
 
-# Figure - Primer set PCoA TODO: Moiddle graphic legend doesn't match others for some reason.
-dataset=$primerdir/2_Analysis/2f_otu_table.no_organelles.RDS
-rarefaction=500
-Rscript Primers_PCoA.r -i $dataset -o $figdir/PrimerPCoA --rarefaction $rarefaction
+
+# # # Primer Sets # # #
+
+with_organelles=$primerdir/2_Analysis/2b_filtered_data.phyloseq.RDS
+no_organelles=$primerdir/2_Analysis/2f_otu_table.no_organelles.RDS
+
+# # Figure - Fraction organelle DNA by primer set
+# Rscript Primers_OrganelleContamination.r -i $with_organelles -o $figdir/PrimerOrganelleContamination
+
+# # Figure - Primer set PCoA TODO: Moiddle graphic legend doesn't match others for some reason.
+# rarefaction=500
+# Rscript Primers_PCoA.r -i $no_organelles -o $figdir/PrimerPCoA --rarefaction $rarefaction
 
 # # Figure - Primer set fraction OTUs captured 
-# dataset=$primerdir/2_Analysis/2f_otu_table.no_organelles.RDS
-# Rscript Primers_FractionOtusCaptured.r -i $dataset -o $figdir/PrimerUniqueSharedOtus --group-by Genus
+# Rscript Primers_FractionOtusCaptured.r -i $no_organelles -o $figdir/PrimerUniqueSharedOtus --group-by Genus
+
+# # Figure - Taxa discriminated against by each method
+# levels="Phylum Class Order Family Genus"
+# alpha=0.01
+# Rscript Both_TaxaDiscrimination.r -i $extractions -o $figdir/ExtractionTaxaDiscrimination --reference PNAs --levels $levels --fix-zeros --alpha $alpha
+
+

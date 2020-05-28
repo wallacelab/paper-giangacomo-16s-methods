@@ -21,8 +21,8 @@ conda_phyloseq=phyloseq-1.28.0  # Conda environment with Phyloseq 1.28.0
 . $(conda info --root)/etc/profile.d/conda.sh 
 
 
-# # Export the environment files (recommended to use these instead when creating a new conda environment)
-# conda activate $conda_qiime2
-# conda env export > $conda_qiime2.yml
-# conda activate $conda_phyloseq
-# conda env export > $conda_phyloseq.yml
+# Export the environment files (recommended to use these instead when creating a new conda environment)
+conda activate $conda_qiime2
+conda env export > $conda_qiime2.yml
+conda activate $conda_phyloseq
+conda env export > $conda_phyloseq.yml

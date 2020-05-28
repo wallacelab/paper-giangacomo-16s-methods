@@ -15,14 +15,15 @@ parser$add_argument("-r", "--rarefaction", type="integer", help="Text file of We
 parser$add_argument("--force-rarefaction-level", type="logical", default=FALSE, help="Use the specified rarefaction level even if it is lower than the lowest sample depth. (Default is to use the lowest sample depth if it's higher than the value given by --rarefaction.)")
 parser$add_argument("-o", "--outprefix", help="Prefix for all output files")
 args=parser$parse_args()
-# setwd('/home/jgwall/Documents/Papers/16sMethodsDevelopment_Cecelia_Mohsen/Pipeline/')
+# setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/')
 # args=parser$parse_args(c("-i", "TestPrimers/2_Analysis/2f_otu_table.no_organelles.RDS", "-o", "99_tmp", "-r", "2000" ))
 
 cat("Assessing community distortion with beta diversity metrics\n")
 set.seed(1)
 
 # Load phyloseq data
-mydata = readRDS(args$infile)
+source("StandardizeLabels.r")
+mydata = standardize_labels(readRDS(args$infile), type='amplification')
 mydata = prune_samples(mydata, samples=!sample_data(mydata)$sample.type %in% c("blank", "water"))# Filter out blanks and water controls
 
 # Extract individual data components
@@ -53,27 +54,7 @@ unweighted = unifrac(rarefied, tree=mytree, weighted=FALSE)
 bray = as.matrix(vegdist(t(rarefied), method='bray'))
 
 # Combined distances into a single list item
-distances=list("Weighted UniFrac"=as.matrix(weighted), "Unweighted UniFrac"=as.matrix(unweighted), "Bray-Curtis"=bray)
-
-# Standardize treatments & sample names
-metadata$treatment_std = sapply(as.character(metadata$treatment), switch,
-                                 BlockingOligos_v3v4="BO_3/4", 
-                                 BlockingOligos_v5v7="BO_5/7",
-                                 BlockingOligos_v5v7_noLinkers="BO_5/7",
-                                 Discriminating = "Discriminating",
-                                 PNAs= "PNAs", Universal="Universal",
-                                 NA) # NA catches anything that didn't match
-metadata$treatment_std = factor(metadata$treatment_std)
-metadata$sample.type = sapply(as.character(metadata$sample.type), switch,
-                              "leaf-maize"="Maize Leaf", 
-                              "leaf-soybean"="Soybean Leaf", 
-                              "defined-community"="Defined Community", 
-                              "soil-clay"="Soil 1",
-                              "soil-flowerbed"="Soil 2",
-                              "blank"="Blank",
-                              "water"="Water",
-                              NA) # NA catches anything that didn't match
-                              
+distances=list("Weighted UniFrac"=as.matrix(weighted), "Unweighted UniFrac"=as.matrix(unweighted), "Bray-Curtis"=bray)                        
                                 
 
 # Helper function to subset and do MDS each time, making a list of output results
@@ -85,7 +66,6 @@ subMDS = function(mydistances, metadata, mysamples){
     
     # Combine into a single data frame
     mymeta = metadata[mysamples,]
-    #mymeta$treatment_std = factor(mymeta$treatment_std, levels=levels(metadata$treatment_std)) # maintain factor levels
     mymeta$PC1 = myMDS$points[,1]
     mymeta$PC2 = myMDS$points[,2]
     
@@ -137,7 +117,7 @@ sample_types = c("Soil 1","Soil 2","Defined Community")
 sample_plots = lapply(sample_types, function(mytype){
   samples = rownames(metadata)[metadata$sample.type == mytype ]
   targets = subMDS(distances, metadata, samples)
-  plot.mds(targets[[metric]], color=treatment_std, type=mytype, metric=metric, legend.title="Primer Set") +
+  plot.mds(targets[[metric]], color=treatment, type=mytype, metric=metric, legend.title="Primer Set") +
     scale_color_brewer(palette = "Dark2", drop=FALSE) # Change color scale
 })
 

@@ -21,7 +21,8 @@ args=parser$parse_args()
 
 # Load data
 cat("Loading phyloseq data\n")
-mydata = readRDS(args$infile) 
+source("StandardizeLabels.r")
+mydata = standardize_labels(readRDS(args$infile), type='amplification')
 
 # Pull data back out of Phyloseq object so can plot exactly what we want
 otus = otu_table(mydata)
@@ -49,21 +50,9 @@ other_counts = total_counts - chloro_counts - mito_counts
 tally = data.frame(sample=colnames(otus), targets=other_counts/total_counts, sample.type = key$sample.type, treatment = key$treatment) 
 tally$organs = 1 - tally$targets
 
-# Change levels of samples and treatments for publication
-tally$treatment = sapply(as.character(tally$treatment), switch,
-                                 BlockingOligos_v3v4="BO_3/4", 
-                                 BlockingOligos_v5v7="BO_5/7",
-                                 BlockingOligos_v5v7_noLinkers="BO_5/7",
-                                 Discriminating = "Disc.",
-                                 PNAs= "PNA", Universal="Univ.",
-                                 NA) # NA catches anything that didn't match
-tally$sample.type = sapply(as.character(tally$sample.type), switch,
-                              "leaf-maize"="Maize Leaf", 
-                              "leaf-soybean"="Soybean Leaf", 
-                              "defined-community"="Defined Community", 
-                              "soil-clay"="Soil 1",
-                              "soil-flowerbed"="Soil 2",
-                              NA) # NA catches anything that didn't match
+# Shorten labels for plotting
+tally$treatment[tally$treatment=='Universal'] = "Univ."
+tally$treatment[tally$treatment=='Discriminating'] = "Disc."
 
 # Split by sample type
 plant_targets = droplevels(subset(tally, tally$sample.type %in% c("Maize Leaf", "Soybean Leaf")))

@@ -24,22 +24,6 @@ mydata = prune_samples(mydata, samples= ! sample_data(mydata)$sample.type %in% c
 
 # Create a new combined metadata column of sample type + treatment
 metadata = sample_data(mydata)                            
-metadata$sample.type = sapply(as.character(metadata$sample.type), switch,
-                              "leaf-maize"="Maize Leaf", 
-                              "leaf-soybean"="Soybean Leaf", 
-                              "defined-community"="Defined Community", 
-                              "soil-clay"="Soil 1",
-                              "soil-flowerbed"="Soil 2",
-                              NA) # NA catches anything that didn't match
-                              
-metadata$treatment = sapply(as.character(metadata$treatment), switch,
-                         BlockingOligos_v3v4="BO_3/4", 
-                         BlockingOligos_v5v7="BO_5/7",
-                         BlockingOligos_v5v7_noLinkers="BO_5/7",
-                         Discriminating = "Discriminating",
-                         PNAs= "PNA", Universal="Universal",
-                         NA) # NA catches anything that didn't match
-
 metadata$sample_type_and_treatment = paste(metadata$sample.type, metadata$treatment, sep="~")
 sample_data(mydata) = metadata
 

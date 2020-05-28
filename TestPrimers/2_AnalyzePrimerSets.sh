@@ -47,7 +47,9 @@ phylo_filtered=$workdir/2b_filtered_data.phyloseq.RDS # File that filtered phylo
 # Rscript 2h_AnalyzeAlphaDiversity.r -i $phylo_filtered -o $workdir/2h_filtered
 # Rscript 2h_AnalyzeAlphaDiversity.r -i $workdir/2f_otu_table.no_organelles.RDS -o $workdir/2h_filtered.no_organelles
 
-# Sanity check to make sure each sample comes from what we think it does (esp. since have outliers); use mitochondria and chloroplast seqs to identify origins
+# # Sanity check to make sure each sample comes from what we think it does (esp. since have outliers); use mitochondria and chloroplast seqs to identify origins
 # Not so clear when using Deblur. Earlier pipeline (with vsearch) showed better maize & soybean, and manual BLAST shows 99%+ hit to those species for most abundant mitochondrial ASVs
-Rscript 2i_CheckOrganelleSpecies.r -i $phylo_filtered -o $workdir/2i_organelle_check.png
+# Rscript 2i_CheckOrganelleSpecies.r -i $phylo_filtered -o $workdir/2i_organelle_check.png
   
+# Look for taxa being discriminated against
+Rscript 2k_FindDiscriminatedTaxa.r -i $workdir/2f_otu_table.no_organelles.RDS -o $workdir/2k_discrimination --reference MoBioPowerSoil --levels Phylum Class Order Family Genus --fix-zeros

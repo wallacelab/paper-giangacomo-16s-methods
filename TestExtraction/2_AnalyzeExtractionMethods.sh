@@ -58,5 +58,5 @@ phylo_filtered=$workdir/2b_filtered_data.phyloseq.RDS
 # Ultimately the above species checks are ambiguous, depending on whether you look at identity, sequence count, etc. The BLAST and Kraken results in the troubleshooting directory seem more reliable
 
 # Look for taxa being discriminated against
-Rscript 2k_FindDiscriminatedTaxa.r -i $workdir/2f_otu_table.no_organelles.RDS -o $workdir/2k_discrimination --reference MoBioPowerSoil --levels Phylum Class Order Family Genus Species
-# TODO: Adding DESeq seems to have broken my conda environment. *sigh* Fix that next time
+Rscript 2k_FindDiscriminatedTaxa.r -i $workdir/2f_otu_table.no_organelles.RDS -o $workdir/2k_discrimination --reference PNAs --levels Phylum Class Order Family Genus --fix-zeros
+
