@@ -6,7 +6,9 @@ library(phyloseq)
 standardize_labels = function(mydata, type=c('extraction','amplification')){
     metadata = sample_data(mydata)
     
-    if(type=='extraction'){
+    if(is.null(type)){
+        stop("No type given for standardizing labels")
+    }else if(type=='extraction'){
         metadata$sample.type = sapply(as.character(metadata$sample.type), switch,
                                       "Leaf-Arabidopsis"="Arabidopsis Leaf", 
                                       "Leaf-Corn"="Maize Leaf", 
@@ -34,7 +36,8 @@ standardize_labels = function(mydata, type=c('extraction','amplification')){
                                       "blank"="blank",
                                       "water"="water",
                                       NA) # NA catches anything that didn't match
-        
+        metadata$sample.type = factor(metadata$sample.type)
+                                      
         metadata$treatment = sapply(as.character(metadata$treatment), switch,
                                     BlockingOligos_v3v4="BO_3/4", 
                                     BlockingOligos_v5v7="BO_5/7",
@@ -43,7 +46,7 @@ standardize_labels = function(mydata, type=c('extraction','amplification')){
                                     PNAs= "PNA", 
                                     Universal="Universal",
                                     NA) # NA catches anything that didn't match
-        
+        metadata$treatment = factor(metadata$treatment)
         
     }else{
         stop("Illegal sample type provided to standardize_labels")

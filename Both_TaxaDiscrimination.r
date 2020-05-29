@@ -14,13 +14,13 @@ parser=ArgumentParser()
 parser$add_argument("-i", "--infile", help="RDS file with saved phyloseq object for analysis")
 parser$add_argument("-o", "--outprefix", help="Output file prefix")
 parser$add_argument("-a", "--alpha", type="double", default=0.05, help="Significance cutoff for differentially expressed taxa")
-parser$add_argument("-r", "--reference", default="MoBioPowerSoil", help="Reference treatment to contrast against")
+parser$add_argument("-r", "--reference", help="Reference treatment to contrast against")
 parser$add_argument("-l", "--levels", nargs="*", default="Phylum", help="Space-separated list of taxonomic levels to collapse and test at")
 parser$add_argument("-z", "--fix-zeros", default=FALSE, action='store_true', help="Adds 1 to all OTU counts to prevent DEseq from ignoring any with 0s")
-parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), default="extraction", help="Which experiment set this analysis belongs to")
+parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), help="Which experiment set this analysis belongs to")
 args=parser$parse_args()
 # setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline')
-# args=parser$parse_args(c("-i","TestExtraction/2_Analysis/2f_otu_table.no_organelles.RDS", "-o",'Figures/99_tmp', '-l', 'Phylum', 'Genus', '--fix-zeros'))
+# args=parser$parse_args(c("-i","TestPrimers/2_Analysis/2f_otu_table.no_organelles.RDS", "-o",'Figures/99_tmp', '-l', 'Phylum', 'Genus', '--fix-zeros', '-t', 'amplification', "-r", "PNA"))
 
 
 # Load data

@@ -14,6 +14,7 @@ options(stringsAsFactors=F)
 parser=ArgumentParser()
 parser$add_argument("-i", "--infile", help="Rdata file containing the phyloseq object to analyze (from step 2a)")
 parser$add_argument("-o", "--outprefix", help="Prefix for all output files")
+parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), default="extraction", help="Which experiment set this analysis belongs to")
 args=parser$parse_args()
 # setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/')
 # args=parser$parse_args(c("-i", "TestPrimers/2_Analysis/2b_filtered_data.phyloseq.RDS", "-o", "99_tmp"))
@@ -22,7 +23,7 @@ args=parser$parse_args()
 # Load data
 cat("Loading phyloseq data\n")
 source("StandardizeLabels.r")
-mydata = standardize_labels(readRDS(args$infile), type='amplification')
+mydata = standardize_labels(readRDS(args$infile), type=args$type)
 
 # Pull data back out of Phyloseq object so can plot exactly what we want
 otus = otu_table(mydata)

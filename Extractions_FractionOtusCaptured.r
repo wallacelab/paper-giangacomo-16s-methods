@@ -12,6 +12,7 @@ parser=ArgumentParser()
 parser$add_argument("-i", "--infile", help="RDS file with saved phyloseq object for analysis")
 parser$add_argument("-o", "--outprefix", help="Output file prefix for graphics")
 parser$add_argument("--group-by", help="Taxonomic rank to group results by (optional)")
+parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), default="extraction", help="Which experiment set this analysis belongs to")
 args=parser$parse_args()
 # setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/')
 # args=parser$parse_args(c("-i","TestExtraction/2_Analysis/2f_otu_table.no_organelles.RDS", "-o",'99_tmp'))
@@ -20,7 +21,7 @@ args=parser$parse_args()
  # Load data
 cat("Loading data for fraction of OTUs captured\n")
 source("StandardizeLabels.r")
-mydata = standardize_labels(readRDS(args$infile), type='extraction')
+mydata = standardize_labels(readRDS(args$infile), type=args$type)
 
 # Create a new combined metadata column of sample type + treatment
 metadata = sample_data(mydata)

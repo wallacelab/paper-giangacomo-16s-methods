@@ -14,6 +14,7 @@ parser$add_argument("-r", "--rds-file", help="RDS file with phyloseq object cont
 parser$add_argument("-m", "--min-cutoff", type="double", default=0.01, help="Minimum fraction of total BLAST scores or Kraken hits for a taxon to be displayed")
 parser$add_argument("-l", "--taxon-level", default="F", help="Default taxonomic level to show for kraken results (1- or 2-letter abbreviation)")
 parser$add_argument("-t", "--taxonomy", help="Taxonomy key for the reference sequneces")
+parser$add_argument("--type", choices=c("extraction", "amplification"), default="extraction", help="Which experiment set this analysis belongs to")
 parser$add_argument("--keyfile", help="Keyfile to use for metadata")
 parser$add_argument("-o", "--outprefix", help="Output file prefix")
 args=parser$parse_args()
@@ -38,7 +39,8 @@ taxonomy = cbind(taxonomy, tax_levels)
 taxonomy$is_organ = taxonomy$family=="Mitochondria" | taxonomy$order=="Chloroplast"
 
 # Identify target samples and make display labels
-targets = readRDS(args$rds_file)
+source("StandardizeLabels.r")
+targets = standardize_labels(readRDS(args$rds_file), type=args$type)
 target_samples = sample_names(targets)
 target_data = sample_data(targets)
 target_breaks = paste(target_data$sample.type, target_data$treatment, rownames(target_data), sep="|")

@@ -14,6 +14,7 @@ parser$add_argument("-i", "--infile", help="RDS file containing the phyloseq obj
 parser$add_argument("-r", "--rarefaction", type="integer", help="Text file of Weighted UniFrac distances")
 parser$add_argument("--force-rarefaction-level", type="logical", default=FALSE, help="Use the specified rarefaction level even if it is lower than the lowest sample depth. (Default is to use the lowest sample depth if it's higher than the value given by --rarefaction.)")
 parser$add_argument("-o", "--outprefix", help="Prefix for all output files")
+parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), default="extraction", help="Which experiment set this analysis belongs to")
 args=parser$parse_args()
 # setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/')
 # args=parser$parse_args(c("-i", "TestPrimers/2_Analysis/2f_otu_table.no_organelles.RDS", "-o", "99_tmp", "-r", "2000" ))
@@ -23,7 +24,7 @@ set.seed(1)
 
 # Load phyloseq data
 source("StandardizeLabels.r")
-mydata = standardize_labels(readRDS(args$infile), type='amplification')
+mydata = standardize_labels(readRDS(args$infile), type=args$type)
 mydata = prune_samples(mydata, samples=!sample_data(mydata)$sample.type %in% c("blank", "water"))# Filter out blanks and water controls
 
 # Extract individual data components
