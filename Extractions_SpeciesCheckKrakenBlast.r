@@ -22,7 +22,7 @@ args=parser$parse_args()
 # args=parser$parse_args(c("-b", "0_Troubleshooting/CheckSpeciesByBlast/1_M99.blast.txt", "0_Troubleshooting/CheckSpeciesByBlast/1_M100.blast.txt",
 #                          "-k", "0_Troubleshooting/KrakenCheckExtractions/0a_kraken_report.M79.txt", "0_Troubleshooting/KrakenCheckExtractions/0a_kraken_report.M80.txt",
 #                          "--keyfile", "TestExtraction/16s_extractions_keyfile.tsv", "-t", "~/Projects/0_RawData/Silva_132_release/majority_taxonomy_7_levels.99.txt",
-#                          "-o", "99_tmp", "-r", "TestExtraction/2_Analysis/2f_otu_table.no_organelles.RDS"))
+#                          "-o", "99_tmp", "-r", "TestExtraction/2_Analysis/2f_otu_table.no_organelles.RDS", "--type", "extraction"))
 
 
 cat("Plotting species checks for BLAST and Kraken results\n")
@@ -40,12 +40,11 @@ taxonomy$is_organ = taxonomy$family=="Mitochondria" | taxonomy$order=="Chloropla
 
 # Identify target samples and make display labels
 source("StandardizeLabels.r")
-targets = standardize_labels(readRDS(args$rds_file), type=args$type)
+targets = readRDS(args$rds_file)
 target_samples = sample_names(targets)
 target_data = sample_data(targets)
 target_breaks = paste(target_data$sample.type, target_data$treatment, rownames(target_data), sep="|")
 target_labels = paste(target_data$sample.type, target_data$treatment, sep= " - ")
-target_labels= sub(target_labels, pattern="^[^-]+-", repl="")
 
 ###############
 # BLAST Results

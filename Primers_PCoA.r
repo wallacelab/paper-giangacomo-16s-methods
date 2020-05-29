@@ -17,7 +17,7 @@ parser$add_argument("-o", "--outprefix", help="Prefix for all output files")
 parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), default="extraction", help="Which experiment set this analysis belongs to")
 args=parser$parse_args()
 # setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/')
-# args=parser$parse_args(c("-i", "TestPrimers/2_Analysis/2f_otu_table.no_organelles.RDS", "-o", "99_tmp", "-r", "2000" ))
+# args=parser$parse_args(c("-i", "TestPrimers/2_Analysis/2f_otu_table.no_organelles.RDS", "-o", "99_tmp", "-r", "2000", '-t', 'amplification' ))
 
 cat("Assessing community distortion with beta diversity metrics\n")
 set.seed(1)
@@ -74,6 +74,9 @@ subMDS = function(mydistances, metadata, mysamples){
     pc_variance = myMDS$eig / sum(myMDS$eig)
     mymeta$PC1_var = pc_variance[1]
     mymeta$PC2_var = pc_variance[2]
+    
+    # Standardize treatment factor (otherwise might drop some)
+    mymeta$treatment = factor(as.character(mymeta$treatment), levels=levels(metadata$treatment))
     return(mymeta)
   })
   

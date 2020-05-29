@@ -91,10 +91,16 @@ if(!is.null(args$group_by)){
     ylabel = paste(args$group_by, "count")
 }
 
+# Control sample order; (much more complicated than it really should be)
+sample.order = c("Arabidopsis Leaf","Maize Leaf","Soybean Leaf", "Soil")
+shared$sample.type = as.numeric(factor(shared$sample.type, levels=sample.order))
+max_possible$sample.type = as.numeric(factor(max_possible$sample.type, levels=sample.order)) 
+label_key = setNames(sample.order, 1:length(sample.order))
+
 # Plot stacked barplot of shared & unique sequences
 myplot = ggplot(shared, mapping=aes(x=treatment, y=otu_count)) +
   geom_bar(stat='identity', position='stack', mapping=aes(fill=treatment, alpha=factor(count_type))) +
-  facet_wrap( ~ sample.type, scales='free') + # Facet into one plot per sample type
+  facet_wrap( ~ sample.type, scales='free', labeller=labeller(sample.type=label_key)) + # Facet into one plot per sample type
   theme_bw() +
   theme(strip.background  = element_blank(),
         panel.grid.major.x=element_blank(),

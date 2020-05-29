@@ -43,10 +43,14 @@ soildata = prune_samples(is_soil, mydata)
 
 # Make plots
 richness_plot = function(plotdata, tag="", ...){
+    # Update labels to make simpler
+    sample_labels = c("Arabidopsis","Maize","Soybean", "Soil")
+    names(sample_labels) = c("Arabidopsis Leaf","Maize Leaf","Soybean Leaf", "Soil")
+    
+    # Actual plot
     myplot = plot_richness(plotdata, measures=c("Observed", "Shannon"), x="treatment", color="treatment") +
         geom_point(size=2.5, stroke=1) +
-#         facet_wrap(variable ~ sample.type, scales="free", labeller=labeller(variable = metrics), nrow=2) +
-        facet_grid(variable ~ sample.type, scales="free", labeller=labeller(variable = metrics)) +
+        facet_grid(variable ~ sample.type, scales="free", labeller=labeller(variable = metrics, sample.type=sample_labels)) +
         theme_bw() + 
         theme(text=element_text(face="bold"), axis.text.x=element_blank(), axis.ticks.x=element_blank()) +
         xlab("Samples") +
