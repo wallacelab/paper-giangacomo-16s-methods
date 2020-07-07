@@ -2,11 +2,10 @@
 
 # Identify which bacterial taxa are discrminated against by each group
 
-library(ape)
-library(phyloseq)
 library(argparse)
 library(DESeq2)
 library(ggplot2)
+library(phyloseq)
 options(stringsAsFactors=F)
 
 # Arguments
@@ -14,14 +13,13 @@ parser=ArgumentParser()
 parser$add_argument("-i", "--infile", help="RDS file with saved phyloseq object for analysis")
 parser$add_argument("-o", "--outprefix", help="Output file prefix")
 parser$add_argument("-a", "--alpha", type="double", default=0.05, help="Significance cutoff for differentially expressed taxa")
-parser$add_argument("-r", "--reference", help="Reference treatment to contrast against")
+parser$add_argument("-r", "--reference", default="PowerSoil", help="Reference treatment to contrast against")
 parser$add_argument("-l", "--levels", nargs="*", default="Phylum", help="Space-separated list of taxonomic levels to collapse and test at")
 parser$add_argument("-z", "--fix-zeros", default=FALSE, action='store_true', help="Adds 1 to all OTU counts to prevent DEseq from ignoring any with 0s")
-parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), help="Which experiment set this analysis belongs to")
+parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), default="extraction", help="Which experiment set this analysis belongs to")
 args=parser$parse_args()
-# setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline')
-# args=parser$parse_args(c("-i","TestPrimers/2_Analysis/2f_otu_table.no_organelles.RDS", "-o",'Figures/99_tmp', '-l', 'Phylum', 'Genus', '--fix-zeros', '-t', 'amplification', "-r", "PNA"))
-
+# setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/')
+# args=parser$parse_args(c("-i","TestExtraction/2_Analysis/2f_otu_table.no_organelles.RDS", "-o",'99_tmp'))
 
 # Load data
 cat("Loading data from",args$infile,"\n")
@@ -118,31 +116,75 @@ get_plot_data = function(equalize=FALSE, contrast=NULL){
     # Determine which are significant
     sig_taxa = apply(significant[,names(taxa)], FUN=paste, MARGIN=1, collapse=" ")
     sig_taxa = sub(sig_taxa, pattern=" NA.+", repl="") # Removing NAs from collapsed levels
+    increasing = sig_taxa[significant$log2FoldChange < 0] # log2 change < 0 means contrast (denominator) is bigger
+    decreasing = sig_taxa[significant$log2FoldChange > 0] # log2 change > 0 means contrast (denominator) is smaller
     if(!is.null(contrast)){
         sig_taxa = sig_taxa[significant$contrast == contrast]
     }
     rect_data$taxon = sub(rect_data$taxon, pattern=" NA.+", repl="") 
-    rect_data$significant = factor(rect_data$taxon %in% sig_taxa, levels=c("TRUE", "FALSE"))
+    rect_data$significant = rect_data$taxon %in% sig_taxa
     rect_data$contrast = contrast
+    
+    # Get directionality
+    rect_data$direction="none"
+    rect_data$direction[rect_data$significant & rect_data$taxon %in% increasing] = "increasing"
+    rect_data$direction[rect_data$significant & rect_data$taxon %in% decreasing] = "decreasing"
+    rect_data$direction=factor(rect_data$direction, levels=c("none", "increasing", "decreasing"))
     
     return(rect_data)
 }
 
+# Helper function to get number and percent significant
+get_percent_data = function(plotdata){
+    levels = split(plotdata, plotdata$left) # Split by taxonomic level (coded by where rectangle's left edge starts)
+    taxa_counts = lapply(levels, function(l){
+        sum(l$significant)
+    })
+    taxa_fractions =  lapply(levels, function(l){
+        fraction = sum(l$count[l$significant]) / sum(l$count)
+    })
+    
+    # Combine
+    taxa_counts = do.call(rbind, taxa_counts)
+    taxa_fractions = do.call(rbind, taxa_fractions)
+    percent_data = data.frame(level = as.numeric(rownames(taxa_counts)), taxa_counts, taxa_fractions, contrast=unique(plotdata$contrast))
+    if(length(unique(percent_data$contrast)) != 1){
+        warning("More than one contrast when calculating percent for plot label")
+    }
+        
+    return(percent_data)
+}
+
 # Helper function to plot the hierarchical rectangles
-plot_rects = function(rects){
-    ggplot(rects, mapping=aes(xmin=left, xmax=right, ymin=bottom, ymax=top, fill=significant)) + 
-        geom_rect(size=0.01, color='black') +
+plot_rects = function(rects, percents, title="", reference="reference"){
+    xmin=min(rects$left)
+    xmax=max(rects$right)
+    ymin=min(rects$bottom)
+    ymax = max(rects$top)
+    percents$percent = paste(round(percents$taxa_fractions * 100), "%", sep="")
+    borders = data.frame(left=xmin, right=xmax, bottom=ymin, top=ymax, contrast = unique(rects$contrast))
+    
+    ggplot() + 
+        theme_void() + 
+        geom_rect(rects, mapping=aes(xmin=left, xmax=right, ymin=bottom, ymax=top, fill=direction), size=0.1, color='black') +
+        geom_rect(borders, mapping=aes(xmin=left, xmax=right, ymin=bottom, ymax=top), fill=NA, size=0.5, color='black') +  # Border around plots
         scale_x_continuous(breaks=1:ncol(taxa) + 0.5, labels=names(taxa)) +
         theme(axis.text.x = element_text(angle=90, hjust=1, vjust=0.5, size=6), axis.text.y = element_blank()) +
         facet_grid(~contrast) + 
-        scale_fill_brewer(name="Significant", labels=c("Yes", "No"), palette='Set1') +
-        theme(legend.text = element_text(size=6), legend.title=element_text(size=8), legend.key.size = unit(0.4, "cm")) +
-        ggtitle(paste("Discrimination relative to", args$reference))
+        scale_fill_manual(values=c('white', 'royalblue', 'red3'),    # Color scale
+                          labels=c('No change', paste('More than', reference),paste('Less than',reference))) +
+        theme(legend.title=element_blank(), legend.position="bottom", legend.text=element_text(size=6),
+              legend.key.size = unit(0.5, "cm")) +     # Legend adjustments
+        theme(strip.text=element_text(size=10)) + # Adjust treatment labels on top
+        geom_text(percents, mapping=aes(x=level, label=taxa_counts), y=ymax * -0.025, nudge_x=0.5, size=2) +  # Count labels
+        geom_text(percents, mapping=aes(x=level, label=percent), y=ymax * -0.055, nudge_x=0.5, size=1.5) +    # Percentage labels
+        ylim(ymax * -0.03, ymax)
 }
 
 # Plot
 rawdata = lapply(treatments, function(t){get_plot_data(equalize=FALSE, contrast=t)})
-rawplot = plot_rects(do.call(rbind, rawdata))
+percent_data = lapply(rawdata, get_percent_data)
+rawplot = plot_rects(do.call(rbind, rawdata), do.call(rbind, percent_data), reference=args$reference)
 
 # Save 
 ggsave(rawplot , file=paste(args$outprefix, ".png", sep=""), width=5, height=3, dpi=300)

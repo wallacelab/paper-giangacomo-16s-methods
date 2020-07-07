@@ -63,4 +63,4 @@ richness_plot = function(plotdata, tag="", ...){
 }
 
 richness_plot(plantdata, "plants", width=5, height=3)
-richness_plot(soildata, "soil", width=3.345, height=3)
+richness_plot(soildata, "soil", width=3.25, height=3)

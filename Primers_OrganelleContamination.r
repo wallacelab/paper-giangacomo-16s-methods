@@ -17,7 +17,7 @@ parser$add_argument("-o", "--outprefix", help="Prefix for all output files")
 parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), default="extraction", help="Which experiment set this analysis belongs to")
 args=parser$parse_args()
 # setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/')
-# args=parser$parse_args(c("-i", "TestPrimers/2_Analysis/2b_filtered_data.phyloseq.RDS", "-o", "99_tmp"))
+ # args=parser$parse_args(c("-i", "TestPrimers/2_Analysis/2b_filtered_data.phyloseq.RDS", "-o", "99_tmp", "-t", "amplification"))
 
 
 # Load data
@@ -52,6 +52,7 @@ tally = data.frame(sample=colnames(otus), targets=other_counts/total_counts, sam
 tally$organs = 1 - tally$targets
 
 # Shorten labels for plotting
+tally$treatment = as.character(tally$treatment)
 tally$treatment[tally$treatment=='Universal'] = "Univ."
 tally$treatment[tally$treatment=='Discriminating'] = "Disc."
 
