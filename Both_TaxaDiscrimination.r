@@ -17,14 +17,24 @@ parser$add_argument("-r", "--reference", default="PowerSoil", help="Reference tr
 parser$add_argument("-l", "--levels", nargs="*", default="Phylum", help="Space-separated list of taxonomic levels to collapse and test at")
 parser$add_argument("-z", "--fix-zeros", default=FALSE, action='store_true', help="Adds 1 to all OTU counts to prevent DEseq from ignoring any with 0s")
 parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), default="extraction", help="Which experiment set this analysis belongs to")
+parser$add_argument("-s", "--sample-type", nargs="*", help="Subset data to just these sample types")
+parser$add_argument("-m", "--mean-fits", nargs="*", help="Use the 'mean' option to fit dispersion estimates for these taxonomix levels (default is parametric fit)")
 args=parser$parse_args()
 # setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/')
-# args=parser$parse_args(c("-i","TestExtraction/2_Analysis/2f_otu_table.no_organelles.RDS", "-o",'99_tmp'))
+# args=parser$parse_args(c("-i","TestPrimers/2_Analysis/2f_otu_table.no_organelles.RDS", "-s", "Soil 1", "Soil 2", "-t", "amplification", 
+#     "-r", "Universal", "-l", "Domain", "Phylum", "-m", "Domain", "-o",'99_tmp'))
 
 # Load data
 cat("Loading data from",args$infile,"\n")
 source("StandardizeLabels.r")
 mydata = standardize_labels(readRDS(args$infile), type=args$type)
+
+# Subset to required sample types
+if(!is.null(args$sample_type)){
+    cat("\tSubsetting to just samples of type",args$sample_type,"\n")
+    tokeep = data.frame(sample_data(mydata))$sample.type %in% args$sample_type
+    mydata = subset_samples(mydata, tokeep)
+}
 
 # Collapse at different levels
 cat("\tCollapsing at taxonomic ranks",args$levels,"\n")
@@ -35,11 +45,19 @@ collapsed = lapply(args$levels, function(mylevel){
     }
     return(grouped)
 })
+names(collapsed) = args$levels
 
 # Conver to DEseq2 and analyze
 cat("Running DEseq2 analysis")
 de.data = lapply(collapsed, FUN = phyloseq_to_deseq2, design= ~ sample.type + treatment)
-de.analysis = lapply(de.data, FUN=DESeq, test="Wald", fitType="parametric")
+de.analysis = lapply(names(de.data), function(level){
+    myfit="parametric"
+    if(level %in% args$mean_fits){
+        myfit="mean"
+    }
+    cat("\tFitting",myfit,"error dispersion for level",level,"\n")
+    DESeq(de.data[[level]], test="Wald", fitType="mean")
+})
 
 # Compile results comparing against the supplied reference
 treatments = levels(sample_data(mydata)$treatment)
@@ -157,13 +175,25 @@ get_percent_data = function(plotdata){
 
 # Helper function to plot the hierarchical rectangles
 plot_rects = function(rects, percents, title="", reference="reference"){
+    # Plot values for later reference
     xmin=min(rects$left)
     xmax=max(rects$right)
     ymin=min(rects$bottom)
     ymax = max(rects$top)
+    
+    # Data for # and % OTUs
     percents$percent = paste(round(percents$taxa_fractions * 100), "%", sep="")
+    
+    # Visual borders around plots
     borders = data.frame(left=xmin, right=xmax, bottom=ymin, top=ymax, contrast = unique(rects$contrast))
     
+    # Taxa names
+    tax_names = subset(rects, (left==2) & (contrast == sort(unique(contrast))[1]) )
+    tax_names = tax_names[order(tax_names$count, decreasing=T),][1:10,] # Only label top 10 phyla
+    tax_names$taxon = sub(tax_names$taxon, pattern="Bacteria ", repl="")
+    tax_names$y = (tax_names$top + tax_names$bottom) / 2
+    
+    # Actual plot
     ggplot() + 
         theme_void() + 
         geom_rect(rects, mapping=aes(xmin=left, xmax=right, ymin=bottom, ymax=top, fill=direction), size=0.1, color='black') +
@@ -178,7 +208,12 @@ plot_rects = function(rects, percents, title="", reference="reference"){
         theme(strip.text=element_text(size=10)) + # Adjust treatment labels on top
         geom_text(percents, mapping=aes(x=level, label=taxa_counts), y=ymax * -0.025, nudge_x=0.5, size=2) +  # Count labels
         geom_text(percents, mapping=aes(x=level, label=percent), y=ymax * -0.055, nudge_x=0.5, size=1.5) +    # Percentage labels
-        ylim(ymax * -0.03, ymax)
+        ylim(ymax * -0.03, ymax) +
+        geom_text(tax_names, mapping=aes(label=taxon, x=left, y=y), hjust="right", vjust="center", nudge_x = -1.5, size=2.5) + # Phylum labels
+        theme(plot.margin=unit(c(0,0,0,3), "cm")) + # Adjust margins
+        coord_cartesian(clip = 'off')  # Required so phylum labels don't get cut off
+        
+        
 }
 
 # Plot

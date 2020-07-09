@@ -48,10 +48,11 @@ mytype='extraction'
 # # Figure - Fraction total/unique OTUs captured by each extraction method
 # Rscript Extractions_FractionOtusCaptured.r -i $extractions -o $figdir/ExtractionUniqueSharedOtus --group-by Genus --type $mytype
 # 
-# Figure - Taxa discriminated against by each method
-levels="Phylum Class Order Family Genus"
-alpha=0.01
-Rscript Both_TaxaDiscrimination.r -i $extractions -o $figdir/ExtractionTaxaDiscrimination --reference PowerSoil --levels $levels --fix-zeros --alpha $alpha --type $mytype
+# # Figure - Taxa discriminated against by each method
+# levels="Domain Phylum Class Order Family Genus"
+# fit_by_mean="Domain"
+# alpha=0.01
+# Rscript Both_TaxaDiscrimination.r -i $extractions -o $figdir/ExtractionTaxaDiscrimination --reference PowerSoil --levels $levels --fix-zeros --alpha $alpha --type $mytype --mean-fits $fit_by_mean
 # 
 # # Supplemental Figure - Confirming species identity of extraction samples (specifically, that maize-powersoil is actually maize and not Arabidopsis)
 # blast_results=$troubleshootdir/CheckSpeciesByBlast/1_*.blast.txt
@@ -83,7 +84,9 @@ mytype="amplification"
 # 
 # Figure - Taxa discriminated against by each method
 levels="Domain Phylum Class Order Family Genus"
+fit_by_mean="Domain"
 alpha=0.01
-Rscript Both_TaxaDiscrimination.r -i $no_organelles -o $figdir/PrimerTaxaDiscrimination --reference PNA --levels $levels --fix-zeros --alpha $alpha --type $mytype
+Rscript Both_TaxaDiscrimination.r -i $no_organelles -o $figdir/PrimerTaxaDiscrimination --reference Universal --levels $levels --fix-zeros --alpha $alpha --type $mytype --sample-type "Soil 1" "Soil 2" --mean-fits $fit_by_mean
+
 
 
