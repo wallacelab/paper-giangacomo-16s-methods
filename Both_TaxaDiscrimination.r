@@ -19,10 +19,13 @@ parser$add_argument("-z", "--fix-zeros", default=FALSE, action='store_true', hel
 parser$add_argument("-t", "--type", choices=c("extraction", "amplification"), default="extraction", help="Which experiment set this analysis belongs to")
 parser$add_argument("-s", "--sample-type", nargs="*", help="Subset data to just these sample types")
 parser$add_argument("-m", "--mean-fits", nargs="*", help="Use the 'mean' option to fit dispersion estimates for these taxonomix levels (default is parametric fit)")
+parser$add_argument("--rarefy", default=FALSE, action="store_true", help="Rarefy samples to an even depth before running DESeq")
+parser$add_argument("--rarefy-depth", type="integer", help="What depth to rarefy samples to. Default is smallest among included samples. [Only meaningful if --rarefy also supplied]")
+parser$add_argument("--seed", default=1, type='integer', help="Random seed for rarefaction")
 args=parser$parse_args()
 # setwd('/home/jgwall/Projects/Microbiomes/MicrobiomeMethodsDevelopment/CompareSampleExtractionAndAmplification_Mohsen_Cecelia/2020 03 Consolidated Pipeline/')
-# args=parser$parse_args(c("-i","TestPrimers/2_Analysis/2f_otu_table.no_organelles.RDS", "-s", "Soil 1", "Soil 2", "-t", "amplification", 
-#     "-r", "Universal", "-l", "Domain", "Phylum", "-m", "Domain", "-o",'99_tmp'))
+# args=parser$parse_args(c("-i","TestPrimers/2_Analysis/2f_otu_table.no_organelles.RDS", "-s", "Soil 1", "Soil 2", "-t", "amplification",
+#     "-r", "Universal", "-l", "Domain", "Phylum", "-m", "Domain", "-o",'99_tmp', "--rarefy"))
 
 # Load data
 cat("Loading data from",args$infile,"\n")
@@ -35,6 +38,16 @@ if(!is.null(args$sample_type)){
     tokeep = data.frame(sample_data(mydata))$sample.type %in% args$sample_type
     mydata = subset_samples(mydata, tokeep)
 }
+
+# Rarefy if required
+if(args$rarefy){
+    if(!is.null(args$rarefy_depth)){
+        mydata = rarefy_even_depth(mydata, sample.size=args$rarefy_depth, rngseed=args$seed, replace=F)
+    }else{
+        mydata = rarefy_even_depth(mydata, sample.size=min(sample_sums(mydata)), rngseed=args$seed, replace=F)
+    }
+}
+
 
 # Collapse at different levels
 cat("\tCollapsing at taxonomic ranks",args$levels,"\n")

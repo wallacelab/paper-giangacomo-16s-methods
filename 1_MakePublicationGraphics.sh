@@ -37,9 +37,9 @@ conda activate $conda_phyloseq
 
 extractions=$extractdir/2_Analysis/2f_otu_table.no_organelles.RDS
 mytype='extraction'
+rarefaction=1000
 
 # # Figure - PCoA of extraction methods
-# rarefaction=1000
 # Rscript Extractions_PCoA.r -i $extractions --rarefaction $rarefaction -o $figdir/ExtractionPCoA --type $mytype
 
 # # Figure - Extraction alpha diversity
@@ -49,11 +49,11 @@ mytype='extraction'
 # Rscript Extractions_FractionOtusCaptured.r -i $extractions -o $figdir/ExtractionUniqueSharedOtus --group-by Genus --type $mytype
 # 
 # # Figure - Taxa discriminated against by each method
-# levels="Domain Phylum Class Order Family Genus"
-# fit_by_mean="Domain"
-# alpha=0.01
-# Rscript Both_TaxaDiscrimination.r -i $extractions -o $figdir/ExtractionTaxaDiscrimination --reference PowerSoil --levels $levels --fix-zeros --alpha $alpha --type $mytype --mean-fits $fit_by_mean
-# 
+levels="Domain Phylum Class Order Family Genus"
+fit_by_mean="Domain"
+alpha=0.01
+# Rscript Both_TaxaDiscrimination.r -i $extractions -o $figdir/ExtractionTaxaDiscrimination.rarefy --reference PowerSoil --levels $levels --fix-zeros --alpha $alpha --type $mytype --mean-fits $fit_by_mean --rarefy --seed 1
+
 # # Supplemental Figure - Confirming species identity of extraction samples (specifically, that maize-powersoil is actually maize and not Arabidopsis)
 # blast_results=$troubleshootdir/CheckSpeciesByBlast/1_*.blast.txt
 # kraken_results=$troubleshootdir/KrakenCheckExtractions/0a_kraken_report.*.txt
@@ -71,22 +71,22 @@ mytype='extraction'
 with_organelles=$primerdir/2_Analysis/2b_filtered_data.phyloseq.RDS
 no_organelles=$primerdir/2_Analysis/2f_otu_table.no_organelles.RDS
 mytype="amplification"
+rarefaction=500
 # 
 # # Figure - Fraction organelle DNA by primer set
 # Rscript Primers_OrganelleContamination.r -i $with_organelles -o $figdir/PrimerOrganelleContamination --type $mytype
 # 
 # # Figure - Primer set PCoA
-# rarefaction=500
 # Rscript Primers_PCoA.r -i $no_organelles -o $figdir/PrimerPCoA --rarefaction $rarefaction --type $mytype
 # 
 # # Figure - Primer set fraction OTUs captured 
 # Rscript Primers_FractionOtusCaptured.r -i $no_organelles -o $figdir/PrimerUniqueSharedOtus --group-by Genus --type $mytype
 # 
-# Figure - Taxa discriminated against by each method
+# # Figure - Taxa discriminated against by each method
 levels="Domain Phylum Class Order Family Genus"
 fit_by_mean="Domain"
 alpha=0.01
-Rscript Both_TaxaDiscrimination.r -i $no_organelles -o $figdir/PrimerTaxaDiscrimination --reference Universal --levels $levels --fix-zeros --alpha $alpha --type $mytype --sample-type "Soil 1" "Soil 2" --mean-fits $fit_by_mean
+Rscript Both_TaxaDiscrimination.r -i $no_organelles -o $figdir/PrimerTaxaDiscrimination.rarefy --reference Universal --levels $levels --fix-zeros --alpha $alpha --type $mytype --sample-type "Soil 1" "Soil 2" --mean-fits $fit_by_mean --rarefy --seed 1
 
 
 
