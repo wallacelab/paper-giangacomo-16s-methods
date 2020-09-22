@@ -18,3 +18,34 @@ To recreate our analyses, first run **0_CreateCondaEnvironments.sh** (in the roo
 If you want to run the individual analyses from **TestExtraction** and **TestPrimer**, go into those directories and start with the **0_Analyze16sExtractionMethods.sh** or **0_Analyze16sAmpMethods.sh** scripts, respectively, which are the master scripts that call all others. The necessary variables (data locations, read depth, etc.) are all defined inside these scripts and passed as arguments to downstream scripts. (Note that rerunning from scratch will require downloading the [raw data](https://www.ncbi.nlm.nih.gov/bioproject/PRJNA646931) from NCBI.)
 
 To regenerate just the figures & tables from the manuscript, run **1_MakePublicationGraphics.sh** in the root directory, since all support files necessary to run this have been included in the repo.
+
+## Software
+The following software packages were used in this analysis (see [the paper](https://www.biorxiv.org/content/10.1101/2020.07.23.217901v1) for full citations).  All analyses were done on an desktop workstation with a 4-core Intel Xenon W-2123 processor and 64 GB of RAM running Linux Mint 18.3.
+
+**R packages**
+* ape v5.3 (Paradis and Schliep 2019)
+* argparse v2.0.1 (Davis 2019)
+* DESeq2 v1.24.0 (Love, Huber, and Anders 2014)
+* dplyr v0.8.3 (Wickham et al. 2019)
+* ggplot2 v3.2.1(Wickham 2016)
+* gridExtra v2.3 (Auguie 2017)
+* igraph v1.2.5 (Csardi, Nepusz, and Others 2006)
+* phyloseq v1.28.0 (McMurdie and Holmes 2013)
+* rbiom v1.0.0 (Smith 2019)
+* tidyr v1.0.0 (Wickham and Henry 2019)
+* vegan v2.5.5 (Oksanen et al. 2019)
+  
+**Python packages**
+* argparse v1.1
+* biopython v1.74 (Cock et al. 2009)
+* matplotlib 3.1.0 (Hunter 2007)
+* primer3-py v0.6.0 (“primer3-Py” n.d.)
+
+**Command-line tools**
+* biom v2.1.7 (McDonald et al. 2012)
+* blast+ v2.2.31 (Camacho et al. 2009)
+* Conda v4.8.2, Clustal Omega v1.2.1 (Sievers et al. 2011)
+* cutadapt v2.4 (Martin 2011)
+* libprimer3 v2.5.0 (“Primer3” n.d.)
+* QIIME2 v2019-7 (Bolyen et al. 2019)
+* vsearch v2.7.0 (Rognes et al. 2016)
