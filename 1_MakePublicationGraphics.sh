@@ -39,29 +39,29 @@ extractions=$extractdir/2_Analysis/2f_otu_table.no_organelles.RDS
 mytype='extraction'
 rarefaction=1000
 
-# # Figure - PCoA of extraction methods
-# Rscript Extractions_PCoA.r -i $extractions --rarefaction $rarefaction -o $figdir/ExtractionPCoA --type $mytype
+# Figure - PCoA of extraction methods
+Rscript Extractions_PCoA.r -i $extractions --rarefaction $rarefaction -o $figdir/ExtractionPCoA --type $mytype
 
-# # Figure - Extraction alpha diversity
-# Rscript Extractions_AlphaDiversity.r -i $extractions -o $figdir/ExtractionAlphaDiversity --type $mytype
+# Figure - Extraction alpha diversity
+Rscript Extractions_AlphaDiversity.r -i $extractions -o $figdir/ExtractionAlphaDiversity --type $mytype
 
-# # Figure - Fraction total/unique OTUs captured by each extraction method
-# Rscript Extractions_FractionOtusCaptured.r -i $extractions -o $figdir/ExtractionUniqueSharedOtus --group-by Genus --type $mytype
-# 
-# # Figure - Taxa discriminated against by each method
+# Figure - Fraction total/unique OTUs captured by each extraction method
+Rscript Extractions_FractionOtusCaptured.r -i $extractions -o $figdir/ExtractionUniqueSharedOtus --group-by Genus --type $mytype
+
+# Figure - Taxa discriminated against by each method
 levels="Domain Phylum Class Order Family Genus"
 fit_by_mean="Domain"
 alpha=0.01
-# Rscript Both_TaxaDiscrimination.r -i $extractions -o $figdir/ExtractionTaxaDiscrimination.rarefy --reference PowerSoil --levels $levels --fix-zeros --alpha $alpha --type $mytype --mean-fits $fit_by_mean --rarefy --seed 1
+Rscript Both_TaxaDiscrimination.r -i $extractions -o $figdir/ExtractionTaxaDiscrimination.rarefy --reference PowerSoil --levels $levels --fix-zeros --alpha $alpha --type $mytype --mean-fits $fit_by_mean --rarefy --seed 1
 
-# # Supplemental Figure - Confirming species identity of extraction samples (specifically, that maize-powersoil is actually maize and not Arabidopsis)
-# blast_results=$troubleshootdir/CheckSpeciesByBlast/1_*.blast.txt
-# kraken_results=$troubleshootdir/KrakenCheckExtractions/0a_kraken_report.*.txt
-# min_cutoff=0.05 # Taxon has to be at least this fraction of total in at least 1 sample to be displayed (=weed out the rare stuff)
-# taxonomy=~/Projects/0_RawData/Silva_132_release/majority_taxonomy_7_levels.99.txt
-# keyfile=$extractdir/16s_extractions_keyfile.tsv
-# Rscript Extractions_SpeciesCheckKrakenBlast.r --blast-results $blast_results --kraken-results $kraken_results --min-cutoff $min_cutoff --taxonomy $taxonomy \
-#     --keyfile $keyfile --rds-file $extractions -o $figdir/ExtractionSpeciesCheck --type $mytype
+# Supplemental Figure - Confirming species identity of extraction samples (specifically, that maize-powersoil is actually maize and not Arabidopsis)
+blast_results=$troubleshootdir/CheckSpeciesByBlast/1_*.blast.txt
+kraken_results=$troubleshootdir/KrakenCheckExtractions/0a_kraken_report.*.txt
+min_cutoff=0.05 # Taxon has to be at least this fraction of total in at least 1 sample to be displayed (=weed out the rare stuff)
+taxonomy=~/Projects/0_RawData/Silva_132_release/majority_taxonomy_7_levels.99.txt
+keyfile=$extractdir/16s_extractions_keyfile.tsv
+Rscript Extractions_SpeciesCheckKrakenBlast.r --blast-results $blast_results --kraken-results $kraken_results --min-cutoff $min_cutoff --taxonomy $taxonomy \
+    --keyfile $keyfile --rds-file $extractions -o $figdir/ExtractionSpeciesCheck --type $mytype
 
 
 ##############
@@ -72,17 +72,17 @@ with_organelles=$primerdir/2_Analysis/2b_filtered_data.phyloseq.RDS
 no_organelles=$primerdir/2_Analysis/2f_otu_table.no_organelles.RDS
 mytype="amplification"
 rarefaction=500
-# 
-# # Figure - Fraction organelle DNA by primer set
-# Rscript Primers_OrganelleContamination.r -i $with_organelles -o $figdir/PrimerOrganelleContamination --type $mytype
-# 
-# # Figure - Primer set PCoA
-# Rscript Primers_PCoA.r -i $no_organelles -o $figdir/PrimerPCoA --rarefaction $rarefaction --type $mytype
-# 
-# # Figure - Primer set fraction OTUs captured 
-# Rscript Primers_FractionOtusCaptured.r -i $no_organelles -o $figdir/PrimerUniqueSharedOtus --group-by Genus --type $mytype
-# 
-# # Figure - Taxa discriminated against by each method
+
+# Figure - Fraction organelle DNA by primer set
+Rscript Primers_OrganelleContamination.r -i $with_organelles -o $figdir/PrimerOrganelleContamination --type $mytype
+
+# Figure - Primer set PCoA
+Rscript Primers_PCoA.r -i $no_organelles -o $figdir/PrimerPCoA --rarefaction $rarefaction --type $mytype
+
+# Figure - Primer set fraction OTUs captured 
+Rscript Primers_FractionOtusCaptured.r -i $no_organelles -o $figdir/PrimerUniqueSharedOtus --group-by Genus --type $mytype
+
+# Figure - Taxa discriminated against by each method
 levels="Domain Phylum Class Order Family Genus"
 fit_by_mean="Domain"
 alpha=0.01

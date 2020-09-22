@@ -57,36 +57,36 @@ conda_phyloseq=phyloseq-1.28.0  # Conda environment with Phyloseq 1.28.0
 
 conda activate $conda_qiime2   # Activate the qiime2 environment
 
-# # Step 0: Import SILVA sequences for use in taxonomic classification later
-# qiime tools import \
-#   --type 'FeatureData[Sequence]' \
-#   --input-path $silva_seqs \
-#   --output-path $qiimedir/reference_seqs.qza
-# 
-# qiime tools import \
-#   --type 'FeatureData[Taxonomy]' \
-#   --input-format HeaderlessTSVTaxonomyFormat \
-#   --input-path $silva_taxonomy \
-#   --output-path $qiimedir/reference_taxonomy.qza
-# 
-# makeblastdb -in $silva_seqs -out $qiimedir/reference_seqs -dbtype nucl
+# Step 0: Import SILVA sequences for use in taxonomic classification later
+qiime tools import \
+  --type 'FeatureData[Sequence]' \
+  --input-path $silva_seqs \
+  --output-path $qiimedir/reference_seqs.qza
+
+qiime tools import \
+  --type 'FeatureData[Taxonomy]' \
+  --input-format HeaderlessTSVTaxonomyFormat \
+  --input-path $silva_taxonomy \
+  --output-path $qiimedir/reference_taxonomy.qza
+
+makeblastdb -in $silva_seqs -out $qiimedir/reference_seqs -dbtype nucl
 
 
-# # Step 1: Process raw sequence data down to BIOM feature table
-# rev_trim=100            # How many bases to trim off the 3' end of Reverse reads (where most errors occur); some empirical checks early on found 150 to be the optimum (though some kept improving slgihtly to at least 200, others crashed and couldn't be joined)
-# min_length=100          # Minimum length of sequence to keep after joining (msotly a sanity check, since true reads should be much longer)
-# references=$silva_seqs  # Reference sequences to use for OTU clustering
-# percent_ident=0.99
-# while read primer_set fwd rev deblur_length; do
-#     workdir=$qiimedir/$primer_set
-#     if [ ! -e $workdir ]; then mkdir $workdir; fi
-#     
-#     echo "### Processing $primer_set down to biom with Deblur ###"
-#     bash 1_ProcessSequenceToBiom.sh $datadir/$primer_set $workdir $keyfile $fwd $rev $rev_trim $min_length $deblur_length \
-#          $qiimedir/reference_seqs.qza $qiimedir/reference_taxonomy.qza $primers $qiimedir/reference_seqs $percent_ident $ncores
-# #     break
-#     
-# done < $analysis_keys
+# Step 1: Process raw sequence data down to BIOM feature table
+rev_trim=100            # How many bases to trim off the 3' end of Reverse reads (where most errors occur); some empirical checks early on found 150 to be the optimum (though some kept improving slgihtly to at least 200, others crashed and couldn't be joined)
+min_length=100          # Minimum length of sequence to keep after joining (msotly a sanity check, since true reads should be much longer)
+references=$silva_seqs  # Reference sequences to use for OTU clustering
+percent_ident=0.99
+while read primer_set fwd rev deblur_length; do
+    workdir=$qiimedir/$primer_set
+    if [ ! -e $workdir ]; then mkdir $workdir; fi
+    
+    echo "### Processing $primer_set down to biom with Deblur ###"
+    bash 1_ProcessSequenceToBiom.sh $datadir/$primer_set $workdir $keyfile $fwd $rev $rev_trim $min_length $deblur_length \
+         $qiimedir/reference_seqs.qza $qiimedir/reference_taxonomy.qza $primers $qiimedir/reference_seqs $percent_ident $ncores
+#     break
+    
+done < $analysis_keys
 
 
 # Step 2: Use the Phyloseq package in R to perform analysis and visualization on the raw data

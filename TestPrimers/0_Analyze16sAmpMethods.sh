@@ -35,14 +35,14 @@ ncores=7    # Number of processor cores to use
 conda_qiime2=qiime2-2019-7      # Conda environment with QIIME 2019.7
 conda_phyloseq=phyloseq-1.28.0  # Conda environment with Phyloseq 1.28.0
 
-# # # Create QIIME Conda environment (for reproducibility; only has to be done once, so leave commented out most of the time. This was taken from the QIIME2 installation page at https://docs.qiime2.org/2019.7/install/native/#install-qiime-2-within-a-conda-environment)
-# # wget https://data.qiime2.org/distro/core/qiime2-2019.7-py36-linux-conda.yml
-# # conda env create -n $conda_qiime2 --file qiime2-2019.7-py36-linux-conda.yml
-# # rm qiime2-2019.7-py36-linux-conda.yml # OPTIONAL CLEANUP
+# # Create QIIME Conda environment (for reproducibility; only has to be done once, so leave commented out most of the time. This was taken from the QIIME2 installation page at https://docs.qiime2.org/2019.7/install/native/#install-qiime-2-within-a-conda-environment)
+# wget https://data.qiime2.org/distro/core/qiime2-2019.7-py36-linux-conda.yml
+# conda env create -n $conda_qiime2 --file qiime2-2019.7-py36-linux-conda.yml
+# rm qiime2-2019.7-py36-linux-conda.yml # OPTIONAL CLEANUP
 
-# # # Create Phyloseq Conda environment (for reproducibility; only has to be done once, so leave commented out most of the time. This was taken/modified from https://docs.anaconda.com/anaconda/user-guide/tasks/using-r-language/)
+# # Create Phyloseq Conda environment (for reproducibility; only has to be done once, so leave commented out most of the time. This was taken/modified from https://docs.anaconda.com/anaconda/user-guide/tasks/using-r-language/)
 # note: this requires the bioconda channel to be included; see https://bioconda.github.io/user/install.html#set-up-channels for instructions
-# conda create -n $conda_phyloseq r-essentials r-base bioconductor-phyloseq
+conda create -n $conda_phyloseq r-essentials r-base bioconductor-phyloseq
 
 
 # Load functions required to be able to activate conda environments within scripts.
@@ -54,35 +54,35 @@ conda_phyloseq=phyloseq-1.28.0  # Conda environment with Phyloseq 1.28.0
 
 conda activate $conda_qiime2   # Activate the qiime2 environment
 
-# # Step 0: Import SILVA sequences for use in taxonomic classification later
-# qiime tools import \
-#   --type 'FeatureData[Sequence]' \
-#   --input-path $silva_seqs \
-#   --output-path $qiimedir/reference_seqs.qza
-# 
-# qiime tools import \
-#   --type 'FeatureData[Taxonomy]' \
-#   --input-format HeaderlessTSVTaxonomyFormat \
-#   --input-path $silva_taxonomy \
-#   --output-path $qiimedir/reference_taxonomy.qza
-# 
-# makeblastdb -in $silva_seqs -out $qiimedir/reference_seqs -dbtype nucl
+# Step 0: Import SILVA sequences for use in taxonomic classification later
+qiime tools import \
+  --type 'FeatureData[Sequence]' \
+  --input-path $silva_seqs \
+  --output-path $qiimedir/reference_seqs.qza
+
+qiime tools import \
+  --type 'FeatureData[Taxonomy]' \
+  --input-format HeaderlessTSVTaxonomyFormat \
+  --input-path $silva_taxonomy \
+  --output-path $qiimedir/reference_taxonomy.qza
+
+makeblastdb -in $silva_seqs -out $qiimedir/reference_seqs -dbtype nucl
 
 
-# # Step 1: Process raw sequence data down to BIOM feature table
-# rev_trim=150            # How many bases to trim off the 3' end of Reverse reads (where most errors occur); some empirical checks early on found 150 to be the optimum (though some kept improving slgihtly to at least 200, others crashed and couldn't be joined)
-# min_length=100          # Minimum length of sequence to keep after joining (msotly a sanity check, since true reads should be much longer)
-# references=$silva_seqs  # Reference sequences to use for OTU clustering
-# while read primer_set fwd rev deblur_length; do
-#     workdir=$qiimedir/$primer_set
-#     if [ ! -e $workdir ]; then mkdir $workdir; fi
-#     
-#     echo "### Processing $primer_set down to biom with Deblur ###"
-#     bash 1_ProcessSequenceToBiom.sh $datadir/$primer_set $workdir $keyfile $fwd $rev $rev_trim $min_length $deblur_length \
-#          $qiimedir/reference_seqs.qza $qiimedir/reference_taxonomy.qza $primers $qiimedir/reference_seqs $ncores
-# #     break
-#     
-# done < $analysis_keys
+# Step 1: Process raw sequence data down to BIOM feature table
+rev_trim=150            # How many bases to trim off the 3' end of Reverse reads (where most errors occur); some empirical checks early on found 150 to be the optimum (though some kept improving slgihtly to at least 200, others crashed and couldn't be joined)
+min_length=100          # Minimum length of sequence to keep after joining (msotly a sanity check, since true reads should be much longer)
+references=$silva_seqs  # Reference sequences to use for OTU clustering
+while read primer_set fwd rev deblur_length; do
+    workdir=$qiimedir/$primer_set
+    if [ ! -e $workdir ]; then mkdir $workdir; fi
+    
+    echo "### Processing $primer_set down to biom with Deblur ###"
+    bash 1_ProcessSequenceToBiom.sh $datadir/$primer_set $workdir $keyfile $fwd $rev $rev_trim $min_length $deblur_length \
+         $qiimedir/reference_seqs.qza $qiimedir/reference_taxonomy.qza $primers $qiimedir/reference_seqs $ncores
+#     break
+    
+done < $analysis_keys
 
 
 # Step 2: Use the Phyloseq package in R to perform analysis and visualization on the raw data
